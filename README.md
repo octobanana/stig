@@ -5,7 +5,7 @@ A CLI tool for searching GitHub from the terminal.
 
 ## About
 Stig is a CLI tool for searching GitHub from the terminal.
-With the ability to sort and filter results, Stig makes it easy to find what your looking for.
+With the ability to sort and filter results, Stig makes it easy to find what you're looking for.
 Stig can also print out a repositories README.md to stdout, so you can quickly learn more about a project.
 
 ### Features
