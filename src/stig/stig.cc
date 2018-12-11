@@ -144,7 +144,7 @@ void search(std::string const& query, std::string const& sort, std::string const
     req.params().emplace("access_token", token);
   }
 
-  app.on_http(req.move(), [&](auto& ctx)
+  app.on_http(req.move(), [&js, &rate](auto& ctx)
   {
     if (ctx.res.result() != Belle::Status::ok)
     {
