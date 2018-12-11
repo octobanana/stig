@@ -17,7 +17,7 @@ int program_options(Parg& pg)
   pg.name("stig").version("0.1.1 (11.12.2018)");
   pg.description("A CLI tool for searching Git repositories on GitHub.");
   pg.usage("[flags] [options] [--] [arguments]");
-  pg.usage("[-q|--query str] [-p|--page int] [-n|--number int] [-s|--sort stars|forks|updated|best] [-o|--order asc|desc] [-f|--filter key:value[ key:value]...] [--token str] [-c|--color on|off|auto]");
+  pg.usage("[-q|--query str] [-p|--page int] [-n|--number int] [-s|--sort stars|forks|updated|best] [-o|--order asc|desc] [-f|--filter key:value[ key:value]...] [--token str] [--host str] [-c|--color on|off|auto]");
   pg.usage("[-r|--readme user/repo[/ref]]");
   pg.usage("[-v|--version]");
   pg.usage("[-h|--help]");
@@ -46,6 +46,10 @@ int program_options(Parg& pg)
   pg.set("help,h", "print the help output");
   pg.set("version,v", "print the program version");
 
+  // general options
+  pg.set("token", "", "str", "used to validate against GitHub, enables a greater number of requests before being rate-limited");
+  pg.set("host", "api.github.com", "str", "perform GitHub API v3 requests against a custom host");
+
   // query options
   pg.set("query,q", "", "str", "the query string");
   pg.set("page,p", "1", "int", "the page number to get");
@@ -53,7 +57,6 @@ int program_options(Parg& pg)
   pg.set("sort,s", "best", "stars|forks|updated|best", "how to sort the search results, default is best match");
   pg.set("order,o", "desc", "asc|desc", "the order to sort the search results, default is desc");
   pg.set("filter,f", "", "key:value[ key:value]...", "filter results with space seperated key:value pairs");
-  pg.set("token", "", "str", "used to validate against GitHub, enables a greater number of requests before being rate-limited");
   pg.set("color,c", "auto", "on|off|auto", "used to determine the output color preference, default is auto");
 
   // readme options
@@ -226,13 +229,14 @@ int main(int argc, char *argv[])
         sort = "";
       }
 
+      auto const host = pg.get("host");
       auto const order = pg.get("order");
       auto const page = pg.get<std::size_t>("page");
       auto const per_page = pg.get<std::size_t>("number");
       auto const token = pg.get("token");
       auto const color = pg.get("color");
 
-      Stig::search(query, sort, order, page, per_page, token, color);
+      Stig::search(host, query, sort, order, page, per_page, token, color);
     }
 
     // readme
@@ -261,10 +265,11 @@ int main(int argc, char *argv[])
         );
       }
 
+      auto const host = pg.get("host");
       auto const repo = valid_repo.value().at(match::repo);
       auto const ref = valid_repo.value().at(match::ref);
 
-      Stig::readme(repo, ref);
+      Stig::readme(host, repo, ref);
     }
   }
   catch(std::exception const& e)

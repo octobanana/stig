@@ -119,17 +119,25 @@ std::pair<std::string, std::string> fuzzy_time(long int const sec)
   return res;
 }
 
-void search(std::string const& query, std::string const& sort, std::string const& order, std::size_t page, std::size_t per_page, std::string const& token, std::string const& color)
+void search(std::string const& host, std::string const& query, std::string const& sort, std::string const& order, std::size_t page, std::size_t per_page, std::string const& token, std::string const& color)
 {
   Json js;
   std::pair<int, int> rate;
 
-  Belle::Client app {"api.github.com", 443, true};
+  Belle::Client app {host, 443, true};
   on_http_error(app);
 
   Belle::Request req;
-  req.target("/search/repositories");
   req.method(Belle::Method::get);
+
+  if (host == "api.github.com")
+  {
+    req.target("/search/repositories");
+  }
+  else
+  {
+    req.target("/api/v3/search/repositories");
+  }
 
   req.set(Belle::Header::accept, "application/vnd.github.mercy-preview+json");
 
@@ -267,16 +275,24 @@ void search_print(Json const& js, std::pair<int, int> rate, std::size_t page, st
   << "\n";
 }
 
-void readme(std::string const& repo, std::string const& ref)
+void readme(std::string const& host, std::string const& repo, std::string const& ref)
 {
   std::string res;
 
-  Belle::Client app {"api.github.com", 443, true};
+  Belle::Client app {host, 443, true};
   on_http_error(app);
 
   Belle::Request req;
-  req.target("/repos/" + repo + "/readme");
   req.method(Belle::Method::get);
+
+  if (host == "api.github.com")
+  {
+    req.target("/repos/" + repo + "/readme");
+  }
+  else
+  {
+    req.target("/api/v3/repos/" + repo + "/readme");
+  }
 
   req.set(Belle::Header::accept, "application/vnd.github.VERSION.raw");
 
