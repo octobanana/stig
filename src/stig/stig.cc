@@ -161,8 +161,8 @@ void search(std::string const& query, std::string const& sort, std::string const
     js = Json::parse(std::move(ctx.res.body()));
   });
 
-  auto total = app.queue().size();
-  auto completed = app.connect();
+  auto const total = app.queue().size();
+  auto const completed = app.connect();
 
   if (completed != total)
   {
@@ -300,8 +300,8 @@ void readme(std::string const& repo, std::string const& ref)
     res = std::move(ctx.res.body());
   });
 
-  auto total = app.queue().size();
-  auto completed = app.connect();
+  auto const total = app.queue().size();
+  auto const completed = app.connect();
 
   if (completed != total)
   {

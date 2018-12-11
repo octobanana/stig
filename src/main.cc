@@ -188,11 +188,11 @@ int main(int argc, char *argv[])
     if (pg.find("query"))
     {
       auto query = pg.get("query");
-      auto filter = pg.get("filter");
+      auto const filter = pg.get("filter");
 
       if (! filter.empty())
       {
-        auto filters = String::split(filter, " ");
+        auto const filters = String::split(filter, " ");
 
         for (auto const& kv : filters)
         {
@@ -226,11 +226,11 @@ int main(int argc, char *argv[])
         sort = "";
       }
 
-      auto order = pg.get("order");
-      auto page = pg.get<std::size_t>("page");
-      auto per_page = pg.get<std::size_t>("number");
-      auto token = pg.get("token");
-      auto color = pg.get("color");
+      auto const order = pg.get("order");
+      auto const page = pg.get<std::size_t>("page");
+      auto const per_page = pg.get<std::size_t>("number");
+      auto const token = pg.get("token");
+      auto const color = pg.get("color");
 
       Stig::search(query, sort, order, page, per_page, token, color);
     }
