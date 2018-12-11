@@ -87,13 +87,13 @@ $ stig --query '' --sort 'stars' --filter 'language:js'
 # query 'http server' with filters 'language:cpp' and 'stars:>10'
 $ stig --query 'http server' --filter 'language:cpp stars:>10'
 
-# output the READEME.md for 'octobanana/stig' on default branch
+# output the README.md for 'octobanana/stig' on default branch
 $ stig --readme 'octobanana/stig'
 
-# output the READEME.md for 'octobanana/stig' on branch 'master'
+# output the README.md for 'octobanana/stig' on branch 'master'
 $ stig --readme 'octobanana/stig/master'
 
-# output the READEME.md for 'octobanana/stig' on default branch and pipe into less
+# output the README.md for 'octobanana/stig' on default branch and pipe into less
 $ stig --readme 'octobanana/stig' | less
 
 # output the program help
