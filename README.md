@@ -62,6 +62,11 @@ To extend the limit to __30__ search queries per minute, you can pass a GitHub t
 For more information regarding creating a new personal access token,
 refer to the following [GitHub help article](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/).
 
+### GitHub Enterprise Compatibility
+It is possible to use a custom API endpoint for compatibility with GitHub
+Enterprise installations using the `--host` option. The host should be
+formatted as, `subdomain.domain.tld`. It's expected that the endpoint is served over __HTTPS__ on port __443__.
+
 ### Terminal Compatibility
 A terminal emulator that supports __ansi escape codes__ and __true color__
 is required when colored output is enabled.
