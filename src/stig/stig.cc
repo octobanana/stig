@@ -238,7 +238,12 @@ void search_print(Json const& js, std::pair<int, int> rate, std::size_t page, st
     << aec::wrap(updated.second, {aec::fg_yellow, aec::bold}, is_color)
     << "\n  "
     << desc
-    << "\n\n";
+    << "\n";
+
+    if (! desc.empty())
+    {
+      std::cout << "\n";
+    }
   }
 
   auto const total_results = js["total_count"].get<std::size_t>();
