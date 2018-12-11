@@ -18,7 +18,7 @@ int program_options(Parg& pg)
   pg.description("A CLI tool for searching Git repositories on GitHub.");
   pg.usage("[flags] [options] [--] [arguments]");
   pg.usage("[-q|--query str] [-p|--page int] [-n|--number int] [-s|--sort stars|forks|updated|best] [-o|--order asc|desc] [-f|--filter key:value[ key:value]...] [--token str] [-c|--color on|off|auto]");
-  pg.usage("[-r|--readme user/repo[/branch]]");
+  pg.usage("[-r|--readme user/repo[/ref]]");
   pg.usage("[-v|--version]");
   pg.usage("[-h|--help]");
   pg.info("Examples", {
@@ -32,10 +32,6 @@ int program_options(Parg& pg)
     "stig --readme 'octobanana/stig' | less",
     "stig --help",
     "stig --version",
-  });
-  pg.info("Remote Endpoints", {
-    "https://api.github.com",
-    "https://raw.githubusercontent.com",
   });
   pg.info("Exit Codes", {"0 -> normal", "1 -> error"});
   pg.info("Repository", {
@@ -61,7 +57,7 @@ int program_options(Parg& pg)
   pg.set("color,c", "auto", "on|off|auto", "used to determine the output color preference, default is auto");
 
   // readme options
-  pg.set("readme,r", "", "user/repo[/branch]", "print a repos README.md to stdout");
+  pg.set("readme,r", "", "user/repo[/ref]", "print a repos README.md to stdout");
 
   // pg.set_pos();
   // pg.set_stdin();
@@ -242,29 +238,20 @@ int main(int argc, char *argv[])
     // readme
     else if (pg.find("readme"))
     {
-      auto repo = pg.get("readme");
-
-      if (repo.empty())
-      {
-        throw std::runtime_error(
-          "repo path is empty"
-          "\nview the help output with '-h'"
-        );
-      }
+      auto const path = pg.get("readme");
 
       struct match
       {
         enum
         {
           path,
-          user,
           repo,
-          branch
+          ref
         };
       };
 
-      auto const valid_repo = String::match(repo,
-        std::regex("^([^\\/]+?)\\/([^\\/]+)(?:/([^\\/]+?))?$"));
+      auto const valid_repo = String::match(path,
+        std::regex("^([^\\/]+?\\/[^\\/]+)(?:/([^\\/]+?))?$"));
 
       if (! valid_repo)
       {
@@ -274,12 +261,10 @@ int main(int argc, char *argv[])
         );
       }
 
-      if (valid_repo.value().at(match::branch).empty())
-      {
-        repo += "/master";
-      }
+      auto const repo = valid_repo.value().at(match::repo);
+      auto const ref = valid_repo.value().at(match::ref);
 
-      Stig::readme(repo);
+      Stig::readme(repo, ref);
     }
   }
   catch(std::exception const& e)

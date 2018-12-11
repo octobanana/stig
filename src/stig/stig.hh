@@ -7,7 +7,7 @@ namespace OB::Stig
 {
 
 void search(std::string const& query, std::string const& sort, std::string const& order, std::size_t page, std::size_t per_page, std::string const& token, std::string const& color);
-void readme(std::string const& repo);
+void readme(std::string const& repo, std::string const& ref);
 
 } // namespace OB::Stig
 

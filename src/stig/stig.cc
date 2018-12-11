@@ -267,18 +267,25 @@ void search_print(Json const& js, std::pair<int, int> rate, std::size_t page, st
   << "\n";
 }
 
-void readme(std::string const& repo)
+void readme(std::string const& repo, std::string const& ref)
 {
   std::string res;
 
-  Belle::Client app {"raw.githubusercontent.com", 443, true};
+  Belle::Client app {"api.github.com", 443, true};
   on_http_error(app);
 
   Belle::Request req;
-  req.target("/" + repo + "/README.md");
+  req.target("/repos/" + repo + "/readme");
   req.method(Belle::Method::get);
 
-  app.on_http(req.move(), [&](auto& ctx)
+  req.set(Belle::Header::accept, "application/vnd.github.VERSION.raw");
+
+  if (! ref.empty())
+  {
+    req.params().emplace("ref", ref);
+  }
+
+  app.on_http(req.move(), [&res](auto& ctx)
   {
     if (ctx.res.result() != Belle::Status::ok)
     {
