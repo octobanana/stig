@@ -41,7 +41,6 @@ set (SOURCES
   src/stig/stig.cc
   src/stig/lang.cc
   src/ob/string.cc
-  src/ob/ansi_escape_codes.cc
 )
 
 set (HEADERS

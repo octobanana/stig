@@ -2,8 +2,8 @@
 
 #include "stig/lang.hh"
 
-#include "ob/ansi_escape_codes.hh"
-namespace aec = OB::ANSI_Escape_Codes;
+#include "ob/term.hh"
+namespace aec = OB::Term::ANSI_Escape_Codes;
 
 #include "ob/belle.hh"
 namespace Belle = OB::Belle;
@@ -31,7 +31,9 @@ namespace OB::Stig
 void on_error(std::string const& str);
 void on_http_error(Belle::Client& app);
 std::pair<std::string, std::string> fuzzy_time(long int const sec);
-void search_print(Json const& js, std::pair<int, int> rate, std::size_t page, std::size_t per_page, std::string const& color);
+void ostream_fmt(OB::Term::ostream& os, bool const is_term, bool const is_color);
+void search_print(Json const& js, std::pair<int, int> rate, std::size_t page,
+  std::size_t per_page, std::string const& color);
 
 void on_error(std::string const& str)
 {
@@ -119,7 +121,9 @@ std::pair<std::string, std::string> fuzzy_time(long int const sec)
   return res;
 }
 
-void search(std::string const& host, std::string const& query, std::string const& sort, std::string const& order, std::size_t page, std::size_t per_page, std::string const& token, std::string const& color)
+void search(std::string const& host, std::string const& query,
+  std::string const& sort, std::string const& order, std::size_t page,
+  std::size_t per_page, std::string const& token, std::string const& color)
 {
   Json js;
   std::pair<int, int> rate;
@@ -180,11 +184,30 @@ void search(std::string const& host, std::string const& query, std::string const
   search_print(js, rate, page, per_page, color);
 }
 
-void search_print(Json const& js, std::pair<int, int> rate, std::size_t page, std::size_t per_page, std::string const& color)
+void ostream_fmt(OB::Term::ostream& os, bool const is_term, bool const is_color)
 {
-  // color auto
-  bool is_color {isatty(STDOUT_FILENO)};
+  os.indent(4);
+  os.first_wrap(false);
+  os.escape_codes(is_color);
 
+  if (is_term)
+  {
+    os.width(OB::Term::width(STDOUT_FILENO));
+  }
+  else
+  {
+    os.line_wrap(false);
+  }
+}
+
+void search_print(Json const& js, std::pair<int, int> rate, std::size_t page,
+  std::size_t per_page, std::string const& color)
+{
+  // is stdout a tty
+  bool is_term {OB::Term::is_term(STDOUT_FILENO)};
+
+  // color auto
+  bool is_color {is_term};
   if (color == "on")
   {
     // color on
@@ -195,6 +218,10 @@ void search_print(Json const& js, std::pair<int, int> rate, std::size_t page, st
     // color off
     is_color = false;
   }
+
+  // output formatter
+  OB::Term::ostream out {std::cout};
+  ostream_fmt(out, is_term, is_color);
 
   for (auto const& e : js["items"])
   {
@@ -207,11 +234,7 @@ void search_print(Json const& js, std::pair<int, int> rate, std::size_t page, st
     auto const lang = json_value<std::string>(e["language"]).value_or("");
     auto const desc = json_value<std::string>(e["description"]).value_or("");
 
-    std::string fork_symbol {"<"};
-    if (fork)
-    {
-      fork_symbol = ">";
-    }
+    std::string const fork_symbol {fork ? ">" : "<"};
 
     std::pair<std::string, std::string> updated;
     std::tm t = {};
@@ -221,7 +244,7 @@ void search_print(Json const& js, std::pair<int, int> rate, std::size_t page, st
       updated = fuzzy_time(std::mktime(&t));
     }
 
-    std::cout
+    out
     << aec::wrap(owner, {aec::fg_magenta, aec::bold}, is_color)
     << "/"
     << aec::wrap(repo, {aec::fg_white, aec::bold}, is_color)
@@ -236,13 +259,15 @@ void search_print(Json const& js, std::pair<int, int> rate, std::size_t page, st
     << "] "
     << aec::wrap(updated.first, {aec::fg_yellow, aec::bold}, is_color)
     << aec::wrap(updated.second, {aec::fg_yellow, aec::bold}, is_color)
-    << "\n  "
-    << desc
     << "\n";
 
     if (! desc.empty())
     {
-      std::cout << "\n";
+      out
+      << OB::Term::iomanip::push()
+      << desc
+      << "\n"
+      << OB::Term::iomanip::pop();
     }
   }
 
@@ -262,7 +287,8 @@ void search_print(Json const& js, std::pair<int, int> rate, std::size_t page, st
     }
   }
 
-  std::cout
+  out
+  << "\n"
   << aec::wrap(i1, {aec::fg_magenta, aec::bold}, is_color)
   << "-"
   << aec::wrap(i2, {aec::fg_magenta, aec::bold}, is_color)
