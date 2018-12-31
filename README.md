@@ -55,6 +55,14 @@ At the end of the results, a summary will be shown:
 1-5/81 results | 1/17 pages | 9/10 limit
 ```
 
+### Terminal Compatibility
+A terminal emulator that supports __ansi escape codes__ and __true color__
+is required when colored output is enabled.
+The majority of the popular terminal emulators should support both.
+While having the colored output enabled provides the best experience,
+it can be adjusted using the `--color` option,
+taking either `on`, `off`, or `auto` as inputs, with auto being the default value.
+
 ### GitHub Token
 By default, the GitHub API allows up to __10__ search queries per minute.
 To extend the limit to __30__ search queries per minute, you can pass a GitHub token with the `--token` option.
@@ -67,13 +75,11 @@ It is possible to use a custom API endpoint for compatibility with GitHub
 Enterprise installations using the `--host` option. The host should be
 formatted as, `subdomain.domain.tld`. It's expected that the endpoint is served over __HTTPS__ on port __443__.
 
-### Terminal Compatibility
-A terminal emulator that supports __ansi escape codes__ and __true color__
-is required when colored output is enabled.
-The majority of the popular terminal emulators should support both.
-While having the colored output enabled provides the best experience,
-it can be adjusted using the `--color` option,
-taking either `on`, `off`, or `auto` as inputs, with auto being the default value.
+> #### Important
+> when using the `--host` option, only use the `--token` option with
+> a trusted custom API endpoint.
+> If, for some reason, an incorrect host is passed along with a token,
+> it would be wise to immediately revoke the token and create a new one.
 
 ## Examples
 ```sh
