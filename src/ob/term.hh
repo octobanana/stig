@@ -352,7 +352,7 @@ inline int cursor_get(std::size_t& width_, std::size_t& height_, bool mode_ = tr
   return 0;
 }
 
-template<class T>
+template<typename T>
 std::string wrap(T const val_, std::string const attr_, bool color_ = true)
 {
   std::stringstream ss;
@@ -372,7 +372,7 @@ std::string wrap(T const val_, std::string const attr_, bool color_ = true)
   return ss.str();
 }
 
-template<class T>
+template<typename T>
 std::string wrap(T const val_, std::vector<std::string> const attr_, bool color_ = true)
 {
   std::stringstream ss;
