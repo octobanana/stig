@@ -274,24 +274,35 @@ void search_print(Json const& js, std::pair<int, int> rate, std::size_t page,
   auto const total_results = js["total_count"].get<std::size_t>();
   auto const total_pages = static_cast<std::size_t>(std::ceil(static_cast<double>(total_results) / per_page));
 
-  std::size_t i1 {1};
-  std::size_t i2 {per_page > total_results ? total_results : per_page};
-  if (page > 1)
+  if (total_pages == 0)
   {
-    i2 = page * per_page;
-    i1 = i2 - per_page + 1;
-    if (i2 > total_results)
+    page = 0;
+  }
+
+  std::size_t begin_results {js["items"].size() ? 1ul : 0ul};
+  std::size_t end_results {per_page > total_results ? total_results : per_page};
+
+  if (begin_results && page > 1)
+  {
+    end_results = page * per_page;
+    begin_results = end_results - per_page + 1;
+
+    if (end_results > total_results)
     {
-      i2 = total_results;
-      i1 = total_results - (total_results % per_page);
+      end_results = total_results;
+      begin_results = total_results - (total_results % per_page);
     }
+  }
+  else if (! begin_results)
+  {
+    end_results = 0;
   }
 
   out
   << "\n"
-  << aec::wrap(i1, {aec::fg_magenta, aec::bold}, is_color)
+  << aec::wrap(begin_results, {aec::fg_magenta, aec::bold}, is_color)
   << "-"
-  << aec::wrap(i2, {aec::fg_magenta, aec::bold}, is_color)
+  << aec::wrap(end_results, {aec::fg_magenta, aec::bold}, is_color)
   << "/"
   << aec::wrap(total_results, {aec::fg_white, aec::bold}, is_color)
   << " results | "
