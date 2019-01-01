@@ -76,9 +76,9 @@ Enterprise installations using the `--host` option. The host should be
 formatted as, `subdomain.domain.tld`. It's expected that the endpoint is served over __HTTPS__ on port __443__.
 
 > #### Important
-> when using the `--host` option, only use the `--token` option with
+> When using the `--host` option, only use the `--token` option with
 > a trusted custom API endpoint.
-> If, for some reason, an incorrect host is passed along with a token,
+> If an incorrect host is passed along with a token,
 > it would be wise to immediately revoke the token and create a new one.
 
 ## Examples
