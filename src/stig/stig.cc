@@ -161,8 +161,8 @@ void search(std::string const& host, std::string const& query,
     if (ctx.res.result() != Belle::Status::ok)
     {
       std::stringstream ss; ss
-      << "HTTP request"
-      << " " << ctx.res.result_int()
+      << "HTTP "
+      << "'" << ctx.res.result_int() << "'"
       << " " << ctx.res.reason();
       on_error(ss.str());
       return;
@@ -337,8 +337,8 @@ void readme(std::string const& host, std::string const& repo, std::string const&
     if (ctx.res.result() != Belle::Status::ok)
     {
       std::stringstream ss; ss
-      << "HTTP request"
-      << " " << ctx.res.result_int()
+      << "HTTP "
+      << "'" << ctx.res.result_int() << "'"
       << " " << ctx.res.reason();
       on_error(ss.str());
       return;
