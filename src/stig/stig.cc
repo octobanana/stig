@@ -292,6 +292,11 @@ void search_print(Json const& js, std::pair<int, int> rate, std::size_t page,
       end_results = total_results;
       begin_results = total_results - (total_results % per_page);
     }
+
+    if (page == total_pages)
+    {
+      ++begin_results;
+    }
   }
   else if (! begin_results)
   {
