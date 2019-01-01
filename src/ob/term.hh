@@ -62,7 +62,7 @@ public:
     }
 
     _raw = _old;
-    _raw.c_lflag &= ~(ECHO | ICANON);
+    _raw.c_lflag &= static_cast<tcflag_t>(~(ECHO | ICANON));
     _raw.c_cc[VMIN]  = 0;
     _raw.c_cc[VTIME] = 0;
 
