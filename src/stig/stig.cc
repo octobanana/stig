@@ -232,7 +232,14 @@ void search_print(Json const& js, std::pair<int, int> rate, std::size_t page,
     auto const forks = e["forks_count"].get<std::size_t>();
     auto const issues = e["open_issues_count"].get<std::size_t>();
     auto const lang = json_value<std::string>(e["language"]).value_or("");
-    auto const desc = json_value<std::string>(e["description"]).value_or("");
+    auto desc = json_value<std::string>(e["description"]).value_or("");
+
+    if (desc.size() > 256)
+    {
+      // limit repo description size to 256 chars
+      desc.erase(253);
+      desc.append("...");
+    }
 
     std::string const fork_symbol {fork ? ">" : "<"};
 
