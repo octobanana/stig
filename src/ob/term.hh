@@ -414,23 +414,29 @@ protected:
 
     ~streambuf()
     {
-      endl();
+      flush();
     }
 
-    streambuf& endl()
+    streambuf& flush()
     {
       if (! _buffer.empty())
       {
         if (_size)
         {
+          if (! _white_space && ! _buffer.empty() && _buffer.back() == ' ')
+          {
+            _buffer.erase(_buffer.size() - 1);
+          }
+
           _streambuf->sputn(_prefix.data(), static_cast<std::streamsize>(_prefix.size()));
           _streambuf->sputn(_buffer.data(), static_cast<std::streamsize>(_buffer.size()));
-          _streambuf->sputc('\n');
         }
         else
         {
           _streambuf->sputn(_buffer.data(), static_cast<std::streamsize>(_buffer.size()));
         }
+
+        _streambuf->sputc('\n');
       }
 
       _size = 0;
@@ -442,7 +448,7 @@ protected:
 
     streambuf& push(std::size_t val_)
     {
-      endl();
+      flush();
 
       _level += val_;
 
@@ -453,7 +459,7 @@ protected:
 
     streambuf& pop(std::size_t val_)
     {
-      endl();
+      flush();
 
       if (_level > val_)
       {
@@ -498,6 +504,14 @@ protected:
       return *this;
     }
 
+    streambuf& auto_wrap(bool val_)
+    {
+      _auto_wrap = val_;
+      _prefix.clear();
+
+      return *this;
+    }
+
     streambuf& word_break(bool val_)
     {
       _word_break = val_;
@@ -535,6 +549,12 @@ protected:
       if (traits_type::eq_int_type(traits_type::eof(), ch_))
       {
         return traits_type::not_eof(ch_);
+      }
+
+      // handle auto wrap prefix
+      if (ch_ != ' ' && ch_ != '\t')
+      {
+        _is_prefix = false;
       }
 
       // handle ansi escape codes
@@ -627,7 +647,12 @@ protected:
             _streambuf->sputc('\n');
           }
 
-          if (_white_space || _buffer.empty())
+          if (_auto_wrap && _is_prefix)
+          {
+            _level = 1;
+            _prefix += string(_indent, ' ');
+          }
+          else if (_white_space || _buffer.empty())
           {
             _size += _indent;
             _buffer += string(_indent, ' ');
@@ -667,28 +692,77 @@ protected:
         case '\n':
         case '\r':
         {
-          _buffer += ch_;
+          if (! _white_space && ! _buffer.empty() && _buffer.back() == ' ')
+          {
+            _buffer.erase(_buffer.size() - 1);
+          }
 
           _streambuf->sputn(_prefix.data(), static_cast<std::streamsize>(_prefix.size()));
           _streambuf->sputn(_buffer.data(), static_cast<std::streamsize>(_buffer.size()));
+          _streambuf->sputc(ch_);
 
           _size = 0;
           _buffer.clear();
+
+          if (_auto_wrap)
+          {
+            _level = 0;
+            _is_prefix = true;
+            _prefix.clear();
+          }
 
           return ch_;
         }
 
         case ' ':
         {
-          if (_white_space)
+          if (! _first_wrap && _level == 0)
+          {
+            // don't wrap first line when level is 0
+            // block left intentionally empty
+          }
+          else if (_line_wrap && (_size + 1 + _prefix.size() >= _width))
           {
             ++_size;
-            _buffer += ch_;
+            _buffer += " ";
+
+            if (auto pos = _buffer.find_last_of(" ");
+                _word_break && pos != string::npos)
+            {
+              _streambuf->sputn(_prefix.data(), static_cast<std::streamsize>(_prefix.size()));
+              _streambuf->sputn(_buffer.data(), static_cast<std::streamsize>(pos));
+
+              _size = _buffer.size() - pos - 1;
+              _buffer = _buffer.substr(pos + 1);
+            }
+            else
+            {
+              _streambuf->sputn(_prefix.data(), static_cast<std::streamsize>(_prefix.size()));
+              _streambuf->sputn(_buffer.data(), static_cast<std::streamsize>(_buffer.size()));
+
+              _size = 0;
+              _buffer.clear();
+            }
+
+            _streambuf->sputc('\n');
+
+            return ch_;
+          }
+
+          if (_auto_wrap && _is_prefix)
+          {
+            _level = 1;
+            _prefix += " ";
+          }
+          else if (_white_space)
+          {
+            ++_size;
+            _buffer += " ";
           }
           else if (! _buffer.empty() && _buffer.back() != ' ')
           {
             ++_size;
-            _buffer += ch_;
+            _buffer += " ";
           }
 
           return ch_;
@@ -701,10 +775,10 @@ protected:
             // don't wrap first line when level is 0
             // block left intentionally empty
           }
-          else if (_line_wrap && (_size >= _width - _prefix.size()))
+          else if (_line_wrap && (_size + _prefix.size() >= _width))
           {
             if (auto pos = _buffer.find_last_of(" ");
-              _word_break && pos != string::npos)
+                _word_break && pos != string::npos)
             {
               _streambuf->sputn(_prefix.data(), static_cast<std::streamsize>(_prefix.size()));
               _streambuf->sputn(_buffer.data(), static_cast<std::streamsize>(pos));
@@ -750,6 +824,9 @@ protected:
     // stream should wrap around at output width when level=0
     bool _first_wrap {true};
 
+    // auto calc indent when wrapping line
+    bool _auto_wrap {false};
+
     // stream should break words on wrap
     bool _word_break {true};
 
@@ -758,6 +835,9 @@ protected:
 
     // stream should output escape codes
     bool _escape_codes {true};
+
+    // used to calc the indent for auto wrap
+    bool _is_prefix {true};
 
     // size of buffer minus special chars
     std::size_t _size {0};
@@ -782,10 +862,10 @@ public:
     indent(indent_width_);
   }
 
-  ostream& endl()
+  ostream& flush()
   {
-    _stream.endl();
-    flush();
+    _stream.flush();
+    std::ostream::flush();
 
     return *this;
   }
@@ -793,7 +873,7 @@ public:
   ostream& push(std::size_t val_ = 1)
   {
     _stream.push(val_);
-    flush();
+    std::ostream::flush();
 
     return *this;
   }
@@ -801,7 +881,7 @@ public:
   ostream& pop(std::size_t val_ = 1)
   {
     _stream.pop(val_);
-    flush();
+    std::ostream::flush();
 
     return *this;
   }
@@ -830,6 +910,13 @@ public:
   ostream& first_wrap(bool val_ = true)
   {
     _stream.first_wrap(val_);
+
+    return *this;
+  }
+
+  ostream& auto_wrap(bool val_ = true)
+  {
+    _stream.auto_wrap(val_);
 
     return *this;
   }
@@ -870,25 +957,25 @@ protected:
 namespace iomanip
 {
 
-class endl
+class flush
 {
 public:
 
-  friend Term::ostream& operator<<(Term::ostream& os_, endl const&)
+  friend Term::ostream& operator<<(Term::ostream& os_, flush const&)
   {
-    os_.endl();
+    os_.flush();
 
     return os_;
   }
 
-  friend Term::ostream& operator<<(std::ostream& os_, endl const&)
+  friend Term::ostream& operator<<(std::ostream& os_, flush const&)
   {
     auto& derived = dynamic_cast<Term::ostream&>(os_);
-    derived.endl();
+    derived.flush();
 
     return derived;
   }
-}; // class endl
+}; // class flush
 
 class push
 {
