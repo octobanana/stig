@@ -188,6 +188,7 @@ void ostream_fmt(OB::Term::ostream& os, bool const is_term, bool const is_color)
 {
   os.indent(4);
   os.first_wrap(false);
+  os.white_space(false);
   os.escape_codes(is_color);
 
   if (is_term)
@@ -273,7 +274,6 @@ void search_print(Json const& js, std::pair<int, int> rate, std::size_t page,
       out
       << OB::Term::iomanip::push()
       << desc
-      << "\n"
       << OB::Term::iomanip::pop();
     }
   }
