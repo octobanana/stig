@@ -14,7 +14,7 @@ int program_options(Parg& pg);
 
 int program_options(Parg& pg)
 {
-  pg.name("stig").version("0.1.5 (01.01.2019)");
+  pg.name("stig").version("0.1.6 (05.01.2019)");
   pg.description("A CLI tool for searching Git repositories on GitHub.");
   pg.usage("[flags] [options] [--] [arguments]");
   pg.usage("[-q|--query str] [-p|--page int] [-n|--number int] [-s|--sort stars|forks|updated|best] [-o|--order asc|desc] [-f|--filter key:value[ key:value]...] [--token str] [--host str] [-c|--color on|off|auto]");
